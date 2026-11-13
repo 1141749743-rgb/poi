@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${poi.name} + ' · 校园生活圈'">地点 · 校园生活圈</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div th:replace="~{partials/nav}"></div>
+
+<div class="wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="detail-head">
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span class="poi-cat" th:text="${poi.categoryName}"></span>
+                <span class="pill pill-open" th:if="${poi.openNow != null and poi.openNow}"><span class="dot"></span>营业中</span>
+                <span class="pill pill-closed" th:if="${poi.openNow != null and !poi.openNow}">已打烊</span>
+                <span class="pill pill-closed" th:if="${poi.openNow == null}">营业时间未知</span>
+                <span class="pill pill-dist">🚶 [[${poi.distanceText}]]</span>
+            </div>
+            <h1 th:text="${poi.name}"></h1>
+            <p class="sub">📍 [[${poi.address != null ? poi.address : '暂无地址'}]]</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a th:href="'/category/' + ${poi.categoryId}" class="btn-app ghost sm">← 返回分类</a>
+            <a href="/" class="btn-app ghost sm">首页</a>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <!-- 左：信息 -->
+        <div>
+            <div class="card-app">
+                <div class="info-list">
+                    <div class="info-row"><div class="k">距校区</div>
+                        <div class="v">[[${poi.distanceText}]]<span th:if="${poi.walkMin != null}"> · 步行约 [[${poi.walkMin}]] 分钟</span></div></div>
+                    <div class="info-row"><div class="k">营业时间</div>
+                        <div class="v" th:text="${poi.businessHour != null ? poi.businessHour : '暂无'}"></div></div>
+                    <div class="info-row"><div class="k">评分</div>
+                        <div class="v">
+                            <span class="stars" th:text="${poi.starText}"></span> [[${poi.avgScore}]] 分
+                        </div></div>
+                    <div class="info-row"><div class="k">浏览量</div><div class="v">[[${poi.visitCount}]] 次</div></div>
+                    <div class="info-row"><div class="k">坐标</div><div class="v">[[${poi.lng}]], [[${poi.lat}]]</div></div>
+                    <div class="info-row"><div class="k">标签</div>
+                        <div class="v">
+                            <span class="tag" th:each="tag : ${poi.tagList}" th:text="${tag}"></span>
+                        </div></div>
+                </div>
+            </div>
+
+            <div class="card-app" style="margin-top:14px;">
+                <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:6px;">简介</div>
+                <p style="margin:0;font-size:13.5px;" th:text="${poi.introPretty}"></p>
+            </div>
+
+            <!-- 评论区 -->
+            <div class="card-app" style="margin-top:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+                    <div style="font-weight:700;font-size:15px;">💬 评论</div>
+                    <div class="hint" style="font-size:12.5px;color:var(--ink-3);">[[${commentList.size()}]] 条</div>
+                </div>
+
+                <form th:if="${username != null}" th:action="'/comment/add/' + ${poi.id}" method="POST" style="margin:14px 0 6px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <span class="filter-label">打分</span>
+                        <div class="star-picker">
+                            <label th:each="s : ${ {1,2,3,4,5} }">
+                                <input type="radio" name="score" th:value="${s}" th:attr="checked=${s == 5}">
+                                <span class="star">⭐</span>
+                            </label>
+                        </div>
+                        <span id="scoreText" class="hint">5 分</span>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" name="content" class="input-app" placeholder="说说这里怎么样？人多不多、好不好吃、值不值得去" required style="flex:1;">
+                        <button class="btn-app">发表</button>
+                    </div>
+                </form>
+                <div class="empty" style="padding:16px;margin:12px 0;" th:if="${username == null}">登录后才能发表评论，<a href="/login" style="color:var(--brand);font-weight:600;">去登录</a></div>
+
+                <div class="comment-item" th:each="cm : ${commentList}">
+                    <div class="avatar" th:text="${cm.initial}"></div>
+                    <div class="comment-body">
+                        <div class="comment-top">
+                            <strong th:text="${cm.displayName}"></strong>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span class="stars"><span th:text="${cm.starText}"></span><span style="color:var(--ink-3);font-size:11.5px;margin-left:4px;">[[${cm.score}]] 分</span></span>
+                                <form th:if="${isAdmin != null and isAdmin == 1}" th:action="'/comment/delete/' + ${cm.id}" method="POST" style="margin:0;"
+                                      onsubmit="return confirm('确认删除这条评论？评分会自动重算');">
+                                    <button class="btn-app ghost sm" style="padding:2px 8px;font-size:11.5px;color:#b91c1c;border-color:#f3c6c6;">删除</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="comment-text" th:text="${cm.content}"></div>
+                        <div class="comment-time" th:text="${cm.createTime}"></div>
+                    </div>
+                </div>
+                <div class="empty" style="padding:18px;margin-top:10px;" th:if="${#lists.isEmpty(commentList)}">还没有评论，来抢第一条吧。</div>
+            </div>
+        </div>
+
+        <!-- 右：地图 + 操作 -->
+        <div>
+            <div class="card-app" style="padding:12px;">
+                <div id="map" class="map-box">
+                    <span th:if="${amapKey == null or amapKey.isEmpty()}">地图待接入（设置环境变量 AMAP_JS_KEY）</span>
+                </div>
+                <a th:if="${poi.lng != null and poi.lat != null}"
+                   class="btn-app ghost sm" style="width:100%;margin-top:10px;"
+                   th:href="'https://uri.amap.com/marker?position=' + ${poi.lng} + ',' + ${poi.lat} + '&name=' + ${#uris.escapeQueryParam(poi.name)} + '&src=campus_poi&coordinate=gaode&callnative=1'"
+                   target="_blank" rel="noopener">🧭 在高德地图中打开 / 导航</a>
+            </div>
+
+            <div class="card-app" style="margin-top:14px;">
+                <form th:action="'/favorite/toggle/' + ${poi.id}" method="POST" style="margin:0;">
+                    <button th:if="${isFav}" class="btn-app accent" style="width:100%;">★ 已收藏（点我取消）</button>
+                    <button th:unless="${isFav}" class="btn-app ghost" style="width:100%;">☆ 收藏这个地方</button>
+                </form>
+                <p th:if="${username == null}" class="hint" style="font-size:12px;color:var(--ink-3);margin:10px 0 0;text-align:center;">登录后可以收藏和评论</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="height:50px;"></div>
+</div>
+
+<th:block th:if="${amapKey != null and !amapKey.isEmpty() and poi.lng != null and poi.lat != null}">
+<script th:inline="javascript">
+    window._AMapSecurityConfig = { securityJsCode: [[${amapSecurity}]] };
+</script>
+<script th:src="'https://webapi.amap.com/maps?v=2.0&key=' + ${amapKey}"></script>
+<script th:inline="javascript">
+    const lng = [[${poi.lng}]], lat = [[${poi.lat}]];
+    const map = new AMap.Map('map', { zoom: 16, center: [lng, lat], viewMode: '2D' });
+    new AMap.Marker({ position: [lng, lat], title: [[${poi.name}]], map: map });
+    map.addControl(new AMap.ToolBar({ position: 'RB' }));
+</script>
+</th:block>
+
+<script>
+    // 星星打分：选中几星，就点亮前几颗（不用后端，纯前端即时反馈）
+    document.querySelectorAll('.star-picker').forEach(function (picker) {
+        function paint() {
+            const checked = picker.querySelector('input:checked');
+            const val = checked ? Number(checked.value) : 0;
+            picker.querySelectorAll('input').forEach(function (input) {
+                input.closest('label').classList.toggle('lit', Number(input.value) <= val);
+            });
+            const out = document.getElementById('scoreText');
+            if (out) out.textContent = val + ' 分';
+        }
+        picker.addEventListener('change', paint);
+        paint();
+    });
+</script>
+</body>
+</html>

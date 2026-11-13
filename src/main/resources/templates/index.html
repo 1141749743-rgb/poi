@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园生活圈 · 广二师花都校区 POI 推荐</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div th:replace="~{partials/nav}"></div>
+
+<div class="wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <!-- 校区横幅 -->
+    <section class="hero">
+        <h1 th:text="${campusName} + ' · 校园生活圈'">校区 · 校园生活圈</h1>
+        <p th:text="'📍 ' + ${campusAddress} + ' · 所有距离以大门口为起点，步行速度按 75 米/分钟估算'"></p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="num">[[${overview.total}]]<span>个</span></div>
+                <div class="label">收录地点</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">[[${overview.near}]]<span>个</span></div>
+                <div class="label">步行 10 分钟内</div>
+            </div>
+            <div class="hero-stat">
+                <div class="num">[[${overview.openNow}]]<span>个</span></div>
+                <div class="label">此刻营业中</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 此刻适合去哪 -->
+    <div class="section">
+        <h2>🕒 此刻适合去哪 <span class="poi-cat" style="background:var(--accent-soft);color:#b45309;" th:text="${period.label}"></span></h2>
+        <span class="hint" th:text="${period.tip}"></span>
+    </div>
+    <div class="grid grid-3">
+        <a th:each="poi : ${nowList}" th:href="'/poi/' + ${poi.id}" class="card-app poi-card" style="text-decoration:none;color:inherit;">
+            <div class="poi-title">
+                <h3 th:text="${poi.name}"></h3>
+                <span class="pill pill-open"><span class="dot"></span>营业中</span>
+            </div>
+            <p class="poi-addr">📍 [[${poi.address != null ? poi.address : '暂无地址'}]]</p>
+            <div class="poi-meta">
+                <span class="pill pill-dist">🚶 [[${poi.distanceText}]]</span>
+                <span th:text="${poi.categoryName}"></span>
+                <span>· 步行 [[${poi.walkMin}]] 分钟</span>
+            </div>
+            <div class="poi-foot">
+                <span class="stars">★ [[${poi.avgScore}]]</span>
+                <span class="hint" style="font-size:12px;color:var(--ink-3);">🕐 [[${poi.businessHour != null ? poi.businessHour : '未填营业时间'}]]</span>
+            </div>
+        </a>
+        <div class="empty" style="grid-column:1/-1;" th:if="${#lists.isEmpty(nowList)}">这个时段没有正在营业的地点，可能是营业时间没填准。</div>
+    </div>
+
+    <!-- 生活圈雷达图 -->
+    <div class="section">
+        <h2>🗺 生活圈一眼看懂</h2>
+        <span class="hint">以校区大门为圆心 · 由近到远排布</span>
+    </div>
+    <div class="radar-card">
+        <svg class="radar-svg" viewBox="0 0 420 420" role="img" aria-label="校园生活圈分布图">
+            <circle cx="210" cy="210" r="181" class="radar-ring" stroke-dasharray="5 5"></circle>
+            <circle cx="210" cy="210" r="122" class="radar-ring main"></circle>
+            <circle cx="210" cy="210" r="80" class="radar-ring"></circle>
+            <line x1="210" y1="24" x2="210" y2="396" class="radar-axis"></line>
+            <line x1="24" y1="210" x2="396" y2="210" class="radar-axis"></line>
+            <text x="216" y="126" class="radar-label">300m 校内</text>
+            <text x="216" y="84" class="radar-label">1km 校门口</text>
+            <text x="216" y="25" class="radar-label">3km 城区</text>
+            <text x="216" y="396" class="radar-label">南 ↑</text>
+            <circle cx="210" cy="210" r="7" fill="#0f766e"></circle>
+            <circle cx="210" cy="210" r="13" fill="none" stroke="#0f766e" stroke-width="1.5" opacity=".35"></circle>
+            <a th:each="d : ${overview.dots}" th:href="'/poi/' + ${d.id}">
+                <circle th:attr="cx=${d.x},cy=${d.y},r=${d.size},fill=${d.color}" opacity=".9">
+                    <title th:text="${d.name} + ' · ' + ${d.distText} + ' · ' + ${d.cat}"></title>
+                </circle>
+            </a>
+        </svg>
+        <div class="radar-legend">
+            <div style="font-weight:600;color:var(--ink);font-size:14px;">你的生活圈长什么样</div>
+            <div style="display:flex;flex-wrap:wrap;gap:18px;margin:12px 0 4px;">
+                <div th:each="r : ${overview.rings}">
+                    <div style="font-size:20px;font-weight:750;line-height:1.1;color:var(--brand);font-variant-numeric:tabular-nums;" th:text="${r.n}"></div>
+                    <div style="font-size:12px;color:var(--ink-3);" th:text="${r.label}"></div>
+                </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--ink-2);margin-top:10px;">图上出现的分类：</div>
+            <ul>
+                <li><i style="background:#0f766e"></i>校区大门（圆心）</li>
+                <li th:each="item : ${overview.legend}"><i th:style="'background:' + ${item.color}"></i>[[${item.name}]]</li>
+            </ul>
+            <p class="radar-tip">
+                三个圆环分别是 <strong>300 米（校内）</strong>、<strong>1 公里（校门口生活带）</strong>、<strong>3 公里（花都城区）</strong>，点越靠外越远。
+                图上每个点都可以点开看详情，鼠标悬停能看到店名和距离；这张图和下面所有列表用的是同一套距离计算结果。
+            </p>
+        </div>
+    </div>
+
+    <!-- 场景入口 -->
+    <div class="section">
+        <h2>🎯 场景入口</h2>
+        <span class="hint">别按分类翻，直接说你现在想干什么</span>
+    </div>
+    <div class="scene-grid">
+        <a th:each="s : ${scenes}" th:href="'/scene/' + ${s.key}" class="scene-tile">
+            <span class="emoji" th:text="${s.emoji}"></span>
+            <span class="name" th:text="${s.name}"></span>
+            <span class="desc" th:text="${s.desc}"></span>
+        </a>
+    </div>
+
+    <!-- 分类导航 -->
+    <div class="section">
+        <h2>📂 分类浏览</h2>
+        <span class="hint">共 [[${overview.cats.size()}]] 个分类</span>
+    </div>
+    <div class="cat-grid">
+        <a th:each="c : ${overview.cats}" th:href="'/category/' + ${c.id}" class="cat-chip">
+            <span class="cat-name"><span class="swatch" th:style="'background:' + ${c.color} + ';display:inline-block;margin-right:6px;'"></span>[[${c.name}]]</span>
+            <span class="cat-count" th:text="${c.n}"></span>
+        </a>
+    </div>
+
+    <!-- 为你推荐 -->
+    <div class="section">
+        <h2>🎯 为你推荐</h2>
+        <span class="hint" th:if="${!#lists.isEmpty(userTags)}">你的偏好标签：<span class="tag" th:each="t : ${userTags}" th:text="${t}"></span> </span>
+    </div>
+    <div class="grid grid-3" th:if="${!#lists.isEmpty(recommendList)}">
+        <a th:each="poi : ${recommendList}" th:href="'/poi/' + ${poi.id}" class="card-app poi-card" style="text-decoration:none;color:inherit;border-color:#cfe9e3;">
+            <div class="poi-title">
+                <h3 th:text="${poi.name}"></h3>
+                <span class="poi-cat" th:text="${poi.categoryName}"></span>
+            </div>
+            <p class="poi-addr">📍 [[${poi.address != null ? poi.address : '暂无地址'}]]</p>
+            <div class="poi-meta">
+                <span class="pill pill-dist">🚶 [[${poi.distanceText}]]</span>
+                <span class="pill pill-open" th:if="${poi.openNow != null and poi.openNow}"><span class="dot"></span>营业中</span>
+                <span class="pill pill-closed" th:if="${poi.openNow != null and !poi.openNow}">已打烊</span>
+            </div>
+            <div class="poi-foot">
+                <span class="tag" th:each="tag : ${poi.matchedTags}" style="background:var(--accent-soft);color:#b45309;">命中「[[${tag}]]」</span>
+                <span class="hint" style="font-size:12px;color:var(--ink-3);">★ [[${poi.avgScore}]]</span>
+            </div>
+        </a>
+    </div>
+    <div class="empty" th:if="${#lists.isEmpty(recommendList) and username != null}">还没有足够的浏览数据。去随便逛逛几个地点、收藏几个，这里就会生成你的专属推荐。</div>
+    <div class="empty" th:if="${#lists.isEmpty(recommendList) and username == null}"><a href="/login" style="color:var(--brand);font-weight:600;">登录</a>后浏览、收藏几个地点，这里会出现为你量身定制的推荐。</div>
+
+    <!-- 热门地点 -->
+    <div class="section">
+        <h2>🔥 热门地点</h2>
+        <span class="hint">按浏览量和评分排序</span>
+    </div>
+    <div class="grid grid-3">
+        <a th:each="poi : ${hotPoiList}" th:href="'/poi/' + ${poi.id}" class="card-app poi-card" style="text-decoration:none;color:inherit;">
+            <div class="poi-title">
+                <h3 th:text="${poi.name}"></h3>
+                <span class="pill pill-open" th:if="${poi.openNow != null and poi.openNow}"><span class="dot"></span>营业中</span>
+                <span class="pill pill-closed" th:if="${poi.openNow != null and !poi.openNow}">已打烊</span>
+            </div>
+            <p class="poi-addr">📍 [[${poi.address != null ? poi.address : '暂无地址'}]]</p>
+            <div class="poi-meta">
+                <span class="pill pill-dist">🚶 [[${poi.distanceText}]]</span>
+                <span>👁 [[${poi.visitCount}]]</span>
+                <span>★ [[${poi.avgScore}]]</span>
+            </div>
+            <div class="poi-tags">
+                <span class="tag" th:each="tag : ${poi.tagList}" th:text="${tag}"></span>
+            </div>
+        </a>
+        <div class="empty" style="grid-column:1/-1;" th:if="${#lists.isEmpty(hotPoiList)}">暂时还没有地点数据，请管理员先添加。</div>
+    </div>
+
+    <div style="height:50px;"></div>
+</div>
+</body>
+</html>

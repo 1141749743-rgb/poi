@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论管理 · 后台</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body style="background:var(--bg);">
+<div th:replace="~{partials/admin_nav}"></div>
+
+<div class="admin-wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>💬 全部评论（共 [[${commentList.size()}]] 条，最多显示 200 条）</h3>
+            <input type="text" id="cmFilter" placeholder="按地点 / 用户名 / 内容筛选…"
+                   style="padding:7px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;width:260px;">
+        </div>
+        <div class="panel-body table-scroll">
+            <table class="table-app" id="cmTable">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">ID</th>
+                        <th>地点</th>
+                        <th>用户</th>
+                        <th style="width:90px;">分数</th>
+                        <th>内容</th>
+                        <th style="width:150px;">时间</th>
+                        <th style="width:70px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cm : ${commentList}">
+                        <td style="color:var(--ink-3);" th:text="${cm.id}"></td>
+                        <td><a th:href="'/poi/' + ${cm.poiId}" class="mini-btn" th:text="${cm.poiName}"></a></td>
+                        <td th:text="${cm.displayName}"></td>
+                        <td style="white-space:nowrap;">
+                            <span class="stars" style="font-size:11.5px;" th:text="${cm.starText}"></span>
+                            <span style="color:var(--ink-3);font-size:11.5px;">[[${cm.score}]] 分</span>
+                        </td>
+                        <td style="font-size:12.5px;" th:text="${cm.content}"></td>
+                        <td style="color:var(--ink-3);font-size:12px;" th:text="${cm.createTime}"></td>
+                        <td>
+                            <form th:action="'/admin/comment/delete/' + ${cm.id}" method="POST" style="margin:0;"
+                                  onsubmit="return confirm('确定删除这条评论？平均分会自动重算');">
+                                <button class="mini-btn danger">删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(commentList)}"><td colspan="7" style="text-align:center;color:var(--ink-3);padding:22px;">还没有评论</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('cmFilter').addEventListener('input', function () {
+        const kw = this.value.trim().toLowerCase();
+        document.querySelectorAll('#cmTable tbody tr').forEach(function (tr) {
+            tr.style.display = (!kw || tr.innerText.toLowerCase().indexOf(kw) !== -1) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

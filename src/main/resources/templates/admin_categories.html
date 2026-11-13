@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分类管理 · 后台</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body style="background:var(--bg);">
+<div th:replace="~{partials/admin_nav}"></div>
+
+<div class="admin-wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>📂 分类管理（共 [[${cateList.size()}]] 个）</h3>
+            <form action="/admin/category/add" method="POST" style="display:flex;gap:8px;margin:0;">
+                <input type="text" name="name" placeholder="新分类名，如 快递驿站" required
+                       style="padding:7px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;width:200px;">
+                <button class="mini-btn primary">+ 新增分类</button>
+            </form>
+        </div>
+        <div class="panel-body table-scroll">
+            <table class="table-app">
+                <thead>
+                    <tr><th style="width:70px;">ID</th><th style="width:180px;">分类名</th><th>地点数</th><th style="width:220px;">操作</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${cateList}">
+                        <td style="color:var(--ink-3);" th:text="${c.id}"></td>
+                        <td>
+                            <form th:action="'/admin/category/edit/' + ${c.id}" method="POST" style="display:flex;gap:8px;margin:0;">
+                                <input type="text" name="name" th:value="${c.name}" style="max-width:200px;">
+                                <button class="mini-btn primary">改名</button>
+                            </form>
+                        </td>
+                        <td>
+                            <a th:href="'/category/' + ${c.id}" class="mini-btn">[[${c.poiCount}]] 个 →</a>
+                        </td>
+                        <td>
+                            <form th:if="${c.poiCount == 0}" th:action="'/admin/category/delete/' + ${c.id}" method="POST" style="margin:0;"
+                                  th:attr="data-msg='确定删除分类「' + ${c.name} + '」？'"
+                                  onsubmit="return confirm(this.dataset.msg);">
+                                <button class="mini-btn danger">删除</button>
+                            </form>
+                            <span th:if="${c.poiCount > 0}" class="hint" style="font-size:12px;color:var(--ink-3);">有地点，不能删</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(cateList)}"><td colspan="4" style="text-align:center;color:var(--ink-3);padding:22px;">还没有分类</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h3>💡 分类规则</h3></div>
+        <div style="padding:14px 18px;font-size:13px;color:var(--ink-2);line-height:1.9;">
+            分类是给用户看的"语义分组"，一个地点只能属于一个分类。<br>
+            分类下还有地点时不允许删除，否则这些地点的 <code>category_id</code> 会指向不存在的分类，页面直接崩。<br>
+            想调整归属，就去「地点管理」里编辑对应地点。
+        </div>
+    </div>
+</div>
+</body>
+</html>

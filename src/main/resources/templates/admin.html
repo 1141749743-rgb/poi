@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地点管理 · 后台</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body style="background:var(--bg);">
+<div th:replace="~{partials/admin_nav}"></div>
+
+<div class="admin-wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="num" th:text="${stats.poiN}"></div>
+            <div class="label">收录地点</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" th:text="${stats.cmN}"></div>
+            <div class="label">用户评论</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" th:text="${stats.uN}"></div>
+            <div class="label">注册用户</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>📍 地点管理（共 [[${poiList.size()}]] 个）</h3>
+            <input type="text" id="filterInput" class="admin-toolbar" placeholder="按名称、分类、标签筛选…"
+                   style="padding:7px 12px;border:1px solid var(--line);border-radius:9px;font-size:13px;width:260px;">
+        </div>
+        <div class="panel-body table-scroll">
+            <table class="table-app" id="poiTable">
+                <thead>
+                    <tr>
+                        <th style="width:56px;">ID</th>
+                        <th>名称</th>
+                        <th>分类</th>
+                        <th>标签</th>
+                        <th style="width:64px;">评分</th>
+                        <th style="width:64px;">浏览</th>
+                        <th style="width:70px;">状态</th>
+                        <th style="width:210px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="poi : ${poiList}">
+                        <td style="color:var(--ink-3);" th:text="${poi.id}"></td>
+                        <td style="font-weight:600;" th:text="${poi.name}"></td>
+                        <td th:text="${poi.categoryName}"></td>
+                        <td style="color:var(--ink-3);font-size:12px;" th:text="${poi.tags != null ? poi.tags : '—'}"></td>
+                        <td th:text="${poi.avgScore}"></td>
+                        <td th:text="${poi.visitCount}"></td>
+                        <td>
+                            <span class="pill pill-open" th:if="${poi.status == 1}"><span class="dot"></span>上架</span>
+                            <span class="pill pill-closed" th:if="${poi.status != 1}">下架</span>
+                        </td>
+                        <td>
+                            <a th:href="'/admin/poi/edit/' + ${poi.id}" class="mini-btn primary">编辑</a>
+                            <form th:action="'/admin/poi/toggle/' + ${poi.id}" method="POST" class="d-inline" style="display:inline;">
+                                <button class="mini-btn" th:text="${poi.status == 1} ? '下架' : '上架'"></button>
+                            </form>
+                            <form th:action="'/admin/poi/delete/' + ${poi.id}" method="POST" style="display:inline;"
+                                  th:attr="data-msg='确定删除「' + ${poi.name} + '」？相关收藏和评论也会一起删掉'"
+                                  onsubmit="return confirm(this.dataset.msg);">
+                                <button class="mini-btn danger">删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(poiList)}"><td colspan="8" style="text-align:center;color:var(--ink-3);padding:22px;">还没有地点</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>💬 最新评论（15 条）</h3>
+            <a href="/admin/comments" class="mini-btn primary">查看全部 →</a>
+        </div>
+        <div class="panel-body table-scroll">
+            <table class="table-app">
+                <thead>
+                    <tr><th>地点</th><th>用户</th><th style="width:70px;">分数</th><th>内容</th><th style="width:150px;">时间</th><th style="width:70px;">操作</th></tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cm : ${commentList}">
+                        <td th:text="${cm.poiName}"></td>
+                        <td th:text="${cm.username}"></td>
+                        <td>[[${cm.score}]] 分</td>
+                        <td style="font-size:12.5px;" th:text="${cm.content}"></td>
+                        <td style="color:var(--ink-3);font-size:12px;" th:text="${cm.createTime}"></td>
+                        <td>
+                            <form th:action="'/admin/comment/delete/' + ${cm.id}" method="POST" style="margin:0;"
+                                  onsubmit="return confirm('确定删除这条评论？平均分会自动重算');">
+                                <button class="mini-btn danger">删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(commentList)}"><td colspan="6" style="text-align:center;color:var(--ink-3);padding:22px;">还没有评论</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 纯前端筛选：输入关键词，隐藏不匹配的行（不查数据库，快）
+    document.getElementById('filterInput').addEventListener('input', function () {
+        const kw = this.value.trim().toLowerCase();
+        document.querySelectorAll('#poiTable tbody tr').forEach(function (tr) {
+            tr.style.display = (!kw || tr.innerText.toLowerCase().indexOf(kw) !== -1) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

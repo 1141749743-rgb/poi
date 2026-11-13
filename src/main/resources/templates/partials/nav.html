@@ -1,0 +1,21 @@
+<nav class="navbar-app">
+    <div class="wrap">
+        <a class="brand" href="/">
+            <span class="mark">📍</span>
+            <span>校园生活圈</span>
+            <small>广二师 · 花都校区</small>
+        </a>
+        <div class="nav-actions">
+            <a href="/admin" class="btn-app sm" style="background:#10231f;" th:if="${isAdmin != null and isAdmin == 1}">🛠 后台管理</a>
+            <th:block th:if="${username != null}">
+                <span class="nav-user">👤 [[${username}]]</span>
+                <a href="/my" class="btn-app ghost sm">我的收藏</a>
+                <a href="/logout" class="btn-app sm">退出</a>
+            </th:block>
+            <th:block th:if="${username == null}">
+                <a href="/login" class="btn-app ghost sm">登录</a>
+                <a href="/register" class="btn-app sm">注册</a>
+            </th:block>
+        </div>
+    </div>
+</nav>

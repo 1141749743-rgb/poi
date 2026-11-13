@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${cate.name} + ' · 校园生活圈'">分类 · 校园生活圈</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div th:replace="~{partials/nav}"></div>
+
+<div class="wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="detail-head" style="margin:26px 0 14px;">
+        <div>
+            <h1 style="font-size:24px;" th:text="${cate.name}"></h1>
+            <p class="sub">共 [[${poiList.size()}]] 个地点 · 距离以[[${campusName}]]大门为起点</p>
+        </div>
+        <a href="/" class="btn-app ghost sm">← 返回首页</a>
+    </div>
+
+    <div class="filterbar">
+        <span class="filter-label">圈层</span>
+        <div class="seg">
+            <a th:href="'/category/' + ${cate.id} + '?sort=' + ${sort}" th:classappend="${radius == null} ? 'on'">全部</a>
+            <a th:href="'/category/' + ${cate.id} + '?radius=500&sort=' + ${sort}" th:classappend="${radius != null and radius == 500} ? 'on'">500m</a>
+            <a th:href="'/category/' + ${cate.id} + '?radius=1000&sort=' + ${sort}" th:classappend="${radius != null and radius == 1000} ? 'on'">1km</a>
+            <a th:href="'/category/' + ${cate.id} + '?radius=3000&sort=' + ${sort}" th:classappend="${radius != null and radius == 3000} ? 'on'">3km</a>
+        </div>
+        <span class="filter-label" style="margin-left:8px;">排序</span>
+        <div class="seg">
+            <a th:href="'/category/' + ${cate.id} + '?' + (${radius != null} ? 'radius=' + ${radius} + '&' : '') + 'sort=near'" th:classappend="${sort == 'near'} ? 'on'">距离最近</a>
+            <a th:href="'/category/' + ${cate.id} + '?' + (${radius != null} ? 'radius=' + ${radius} + '&' : '') + 'sort=hot'" th:classappend="${sort == 'hot'} ? 'on'">最热门</a>
+            <a th:href="'/category/' + ${cate.id} + '?' + (${radius != null} ? 'radius=' + ${radius} + '&' : '') + 'sort=score'" th:classappend="${sort == 'score'} ? 'on'">评分最高</a>
+        </div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:16px;">
+        <a th:each="poi : ${poiList}" th:href="'/poi/' + ${poi.id}" class="card-app poi-card" style="text-decoration:none;color:inherit;">
+            <div class="poi-title">
+                <h3 th:text="${poi.name}"></h3>
+                <span class="pill pill-open" th:if="${poi.openNow != null and poi.openNow}"><span class="dot"></span>营业中</span>
+                <span class="pill pill-closed" th:if="${poi.openNow != null and !poi.openNow}">已打烊</span>
+                <span class="pill pill-closed" th:if="${poi.openNow == null}">营业时间未知</span>
+            </div>
+            <p class="poi-addr">📍 [[${poi.address != null ? poi.address : '暂无地址'}]]</p>
+            <div class="poi-meta">
+                <span class="pill pill-dist">🚶 [[${poi.distanceText}]]</span>
+                <span th:if="${poi.walkMin != null}">步行 [[${poi.walkMin}]] 分钟</span>
+                <span>👁 [[${poi.visitCount}]]</span>
+                <span>★ [[${poi.avgScore}]]</span>
+            </div>
+            <div class="poi-tags">
+                <span class="tag" th:each="tag : ${poi.tagList}" th:text="${tag}"></span>
+            </div>
+            <div class="poi-foot">
+                <span class="hint" style="font-size:12px;color:var(--ink-3);">🕐 [[${poi.businessHour != null ? poi.businessHour : '未填时间'}]]</span>
+            </div>
+        </a>
+        <div class="empty" style="grid-column:1/-1;" th:if="${#lists.isEmpty(poiList)}">
+            <span th:if="${radius != null}">这个圈层（[[${radius}]] 米内）暂时没有地点，试试放宽范围。</span>
+            <span th:if="${radius == null}">这个分类下还没有地点，等待管理员添加。</span>
+        </div>
+    </div>
+
+    <div style="height:50px;"></div>
+</div>
+</body>
+</html>

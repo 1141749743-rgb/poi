@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 · 后台</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body style="background:var(--bg);">
+<div th:replace="~{partials/admin_nav}"></div>
+
+<div class="admin-wrap">
+    <div th:replace="~{partials/flash}"></div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>👥 用户管理（共 [[${userList.size()}]] 个账号）</h3>
+        </div>
+        <div class="panel-body table-scroll">
+            <table class="table-app">
+                <thead>
+                    <tr>
+                        <th style="width:70px;">ID</th>
+                        <th>用户名</th>
+                        <th>昵称</th>
+                        <th style="width:80px;">角色</th>
+                        <th style="width:80px;">评论</th>
+                        <th style="width:80px;">收藏</th>
+                        <th style="width:160px;">注册时间</th>
+                        <th style="width:150px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${userList}">
+                        <td style="color:var(--ink-3);" th:text="${u.id}"></td>
+                        <td style="font-weight:600;" th:text="${u.username}"></td>
+                        <td th:text="${u.nickname != null ? u.nickname : '—'}"></td>
+                        <td>
+                            <span class="pill pill-late" th:if="${u.isAdmin == 1}">管理员</span>
+                            <span class="pill pill-closed" th:if="${u.isAdmin != 1}">普通用户</span>
+                        </td>
+                        <td th:text="${u.commentCount}"></td>
+                        <td th:text="${u.favCount}"></td>
+                        <td style="color:var(--ink-3);font-size:12px;" th:text="${u.createTime}"></td>
+                        <td>
+                            <span class="hint" style="font-size:12px;color:var(--ink-3);"
+                                  th:if="${isAdmin == 1 and u.isAdmin == 1 and u.username == adminName}">当前账号（不可降级）</span>
+                            <form th:unless="${u.isAdmin == 1 and u.username == adminName}"
+                                  th:action="'/admin/user/toggle/' + ${u.id}" method="POST" style="margin:0;"
+                                  th:attr="data-msg='确定切换「' + ${u.username} + '」的角色？'"
+                                  onsubmit="return confirm(this.dataset.msg);">
+                                <button class="mini-btn primary" th:text="${u.isAdmin == 1} ? '降为普通用户' : '设为管理员'"></button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h3>🔐 权限说明</h3></div>
+        <div style="padding:14px 18px;font-size:13px;color:var(--ink-2);line-height:1.9;">
+            角色存在 <code>user.is_admin</code> 字段里（1 = 管理员）。<br>
+            管理员登录后 <code>session["isAdmin"] = 1</code>，后台所有页面都会先检查这个值，没有就踢回登录页。<br>
+            为了防止把自己锁在门外，不允许取消当前登录管理员自己的权限。<br>
+            普通用户和密码目前是明文存储，正式上线必须换成哈希（如 Spring Security 的 <code>BCryptPasswordEncoder</code>）。
+        </div>
+    </div>
+</div>
+</body>
+</html>

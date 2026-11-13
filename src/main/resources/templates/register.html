@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 · 校园生活圈</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span class="brand"><span class="mark">📍</span></span>
+            <span style="font-size:12.5px;color:var(--ink-3);">广二师 · 花都校区</span>
+        </div>
+        <h1>创建账号</h1>
+        <p class="auth-sub">注册很简单，填个用户名和密码就行</p>
+
+        <div th:replace="~{partials/flash}"></div>
+
+        <form method="post" th:action="@{/register}">
+            <div class="field">
+                <label>用户名</label>
+                <input type="text" name="username" placeholder="建议用拼音或学号" required autofocus>
+            </div>
+            <div class="field">
+                <label>密码</label>
+                <input type="password" name="pwd" placeholder="设置一个密码" required>
+            </div>
+            <div class="field">
+                <label>昵称（可不填）</label>
+                <input type="text" name="nickname" placeholder="留空就显示用户名">
+            </div>
+            <button type="submit" class="btn-app accent" style="width:100%;margin-top:6px;padding:11px;">注册</button>
+        </form>
+
+        <p class="auth-foot">已有账号？<a href="/login">去登录</a> · <a href="/">返回首页</a></p>
+    </div>
+</div>
+</body>
+</html>
