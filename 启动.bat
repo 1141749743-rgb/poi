@@ -17,13 +17,13 @@ echo [1/3] 检查 Java
 java -version
 echo.
 echo [2/3] 检查 Maven
-mvn -v
+call mvn -v
 echo.
 echo [3/3] 启动服务，等看到 "Tomcat started on port 8080"
 echo        就用浏览器打开 http://127.0.0.1:8080
 echo        停止服务：在本窗口按 Ctrl+C
 echo.
-mvn spring-boot:run
+call mvn spring-boot:run
 echo.
 echo 服务已停止。
 pause
