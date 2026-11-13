@@ -47,6 +47,20 @@ javaversion/
 
 ## 3. 启动步骤
 
+### 3.0 最快的办法：双击 `启动.bat`
+
+在项目根目录双击 **`启动.bat`**，它会自动做三件事：
+
+1. 读 `keys.local.bat`（本地密钥文件，不进 git），把高德 Key 注入环境变量；
+2. 检查 Java 和 Maven 版本，把 `D:\maven\apache-maven-3.9.9\bin` 补进 PATH（如果没配过）；
+3. 执行 `mvn spring-boot:run` 启动服务。
+
+看到 `Tomcat started on port 8080` 就用浏览器打开 <http://127.0.0.1:8080>。
+**停止服务：在那个黑窗口里按 Ctrl+C**，关掉窗口也行。
+
+> 注意：`keys.local.bat` 里有你的 Key，已经被 `.gitignore` 排除，永远不会被提交。
+> 换一台电脑演示时，把 `keys.local.bat` 也拷过去（或者手动设环境变量）即可。
+
 ### 3.1 环境确认
 
 ```powershell
@@ -143,3 +157,49 @@ java -jar target\campus-poi-0.0.1-SNAPSHOT.jar
 - 密码仍是明文存库，和 Flask 版一致。真要上线得换 BCrypt。
 - 没做 CSRF 防护（教学演示够用，正式项目必须加）。
 - 后台「地点表单」页沿用 Bootstrap CDN，和 Flask 版一样是独立的一套样式。
+
+---
+
+## 8. Git 仓库
+
+这个目录已经是一个完整的 git 仓库（`main` 分支），提交按「模块」拆分，不是一次性糊上去的：
+
+```
+chore: 初始化 Spring Boot 3.2.5 工程骨架
+feat(entity,repository): 四个实体 + 五个 Repository
+feat(service): 距离/营业时间、场景筛选、推荐打分、生活圈概览、后台业务
+feat(controller): 前台 5 个 + 后台 1 个控制器
+feat(view): 12 个 Thymeleaf 模板
+docs: README 与运行截图
+chore: 一键启动脚本
+fix: 启动脚本编码与 call 问题
+```
+
+**不进仓库的东西**（写在 `.gitignore` 里）：`target/`、`*.log`、`keys.local.bat`、IDE 配置。
+
+### 8.1 推到 Gitee（推荐，国内快）
+
+```powershell
+# 1. 在 gitee.com 上新建一个空仓库（不要勾选初始化 README）
+# 2. 回到项目目录执行：
+cd C:\Users\ZhuanZ1\Desktop\poi\javaversion
+git remote add origin https://gitee.com/你的用户名/仓库名.git
+git push -u origin main
+```
+
+### 8.2 以后每次改完代码
+
+```powershell
+git status                 # 看改了哪些文件
+git add -A                 # 全部加入暂存区
+git commit -m "feat: 补上 8 个单元测试"
+git push                   # 推到远端
+```
+
+### 8.3 检查有没有把 Key 传上去
+
+```powershell
+git log -S "你的JS-Key前8位" --oneline
+```
+
+这条命令如果**没有任何输出**，说明 Key 没进过任何一次提交 —— 这正是课程「数据安全」要的证据，演示时可以当场跑给老师看。
