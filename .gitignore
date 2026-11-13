@@ -1,0 +1,21 @@
+# 编译产物（重新编译会生成，不进仓库）
+target/
+*.class
+
+# 运行日志
+run.log
+run.err.log
+*.log
+
+# IDE 配置（每个人不一样，不共享）
+.idea/
+*.iml
+.vscode/
+
+# 本地密钥文件（绝对不能提交，里面有 Key）
+keys.local.bat
+.env
+
+# 系统垃圾文件
+Thumbs.db
+.DS_Store
